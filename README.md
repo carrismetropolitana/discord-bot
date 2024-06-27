@@ -8,7 +8,7 @@ Se quiser correr o próprio bot, recomendo que use o [Docker](https://www.docker
 Copie o ficheiro `.env.example` para `.env` e preencha com as informações necessárias.
 ```bash
 docker build . -t cmet-discord
-docker run --env-file .env cmet-discord -d
+docker run --env-file .env -d cmet-discord
 ```
 
 
