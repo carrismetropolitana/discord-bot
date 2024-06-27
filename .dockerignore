@@ -15,3 +15,4 @@ helm-charts
 coverage*
 
 **/.generated
+./db.sqlite

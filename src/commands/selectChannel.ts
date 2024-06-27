@@ -14,7 +14,7 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
 		return;
 	}
 	setChannel(guildId, channelId);
-	const embeds = lastAlerts.alerts.slice(0, 5).map(alertToEmbed);
+	const embeds = lastAlerts.alerts.slice(0, 5).map(alert => alert.al).reverse().map(alertToEmbed);
 	await interaction.reply({
 		content: 'Canal selecionado, aqui estão os alertas mais recentes:',
 		embeds,

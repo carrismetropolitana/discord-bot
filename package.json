@@ -18,9 +18,10 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "protobufjs": "^7.3.2",
+    "colors": "^1.4.0",
     "discord.js": "^14.15.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "protobufjs": "^7.3.2"
   },
   "trustedDependencies": [
     "protobufjs"
