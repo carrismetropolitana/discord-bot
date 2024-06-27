@@ -1,0 +1,28 @@
+{
+  "name": "discord-bot",
+  "module": "src/index.ts",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "A bot to notify users of issues in the Carris Metropolitana network",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "bun src/index.ts",
+    "gen": "mkdir src/.generated 2>/dev/null; pbjs -t static-module -w es6 -o src/.generated/gtfs.js src/feeder/gtfs-realtime.proto && pbts -o src/.generated/gtfs.d.ts src/.generated/gtfs.js"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "protobufjs-cli": "^1.1.2",
+    "@carrismetropolitana/eslint": "^20240622.50.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "protobufjs": "^7.3.2",
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5"
+  },
+  "trustedDependencies": [
+    "protobufjs"
+  ]
+}

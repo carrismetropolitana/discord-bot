@@ -1,0 +1,26 @@
+{
+
+  "editor.tabSize": 2,
+
+  "files.eol": "\n",
+
+  // Enable the ESlint flat config support
+  "eslint.useFlatConfig": true,
+
+  "editor.formatOnSave": false,
+  "eslint.format.enable": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+
+  // Auto fix
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
+
+  // Enable eslint for all supported languages
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
