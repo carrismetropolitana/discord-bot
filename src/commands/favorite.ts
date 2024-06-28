@@ -3,9 +3,6 @@ import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, S
 import { favoriteLine, getFavoriteLinesForUser, unfavoriteLine } from '../db';
 import { lines } from '../utils/lines';
 
-// const parsedLines = lines.map(line => ({ name: line.short_name, value: line.id }));
-// console.log(parsedLines);
-
 const data = new SlashCommandBuilder()
 	.setName('fav')
 	.setDescription('Adicionar ou remover uma linha como favorita, de modo a receber pings em alertas da mesma.')
@@ -61,7 +58,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			await interaction.reply({ content: 'Linha não estava como favorita!', ephemeral: true });
 		}
 	}
-	console.log(addOrRemove, line);
 };
 
 const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => {

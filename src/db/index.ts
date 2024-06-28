@@ -35,11 +35,11 @@ export function getSentAlerts() {
 }
 
 export function favoriteLine(userId: string, guildId: string, alertId: string) {
-	db.query('INSERT INTO favorites (user_id, guild_id, alert_id) VALUES (?, ?, ?)').run(userId, guildId, alertId);
+	db.query('INSERT INTO favorites (user_id, guild_id, line_id) VALUES (?, ?, ?)').run(userId, guildId, alertId);
 }
 
 export function unfavoriteLine(userId: string, guildId: string, alertId: string) {
-	const res = db.query('DELETE FROM favorites WHERE user_id = ? AND guild_id = ? AND alert_id = ?').run(userId, guildId, alertId);
+	const res = db.query('DELETE FROM favorites WHERE user_id = ? AND guild_id = ? AND line_id = ?').run(userId, guildId, alertId);
 	return { deleted: res.changes > 0 };
 }
 
