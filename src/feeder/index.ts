@@ -2,7 +2,7 @@ import { EmbedBuilder } from 'discord.js';
 
 import { client } from '..';
 import { transit_realtime } from '../.generated/gtfs';
-import { addSentAlert, getChannels, getSentAlerts } from '../db';
+import { addSentAlert, getChannels, getFavoritedForLineIds, getSentAlerts } from '../db';
 import log from '../utils/logging';
 
 const INTERVAL = 1000 * 60 * 1;
@@ -35,15 +35,14 @@ async function sendNewAlerts() {
 async function getNewAlerts() {
 	const alerts = await getAlerts();
 	const sentAlerts = getSentAlerts();
-	const newAlerts: { al: transit_realtime.IAlert, id: string }[] = [];
+	const parsedAlerts: { al: transit_realtime.IAlert, id: string }[] = [];
 	for (const alert of alerts) {
 		if (alert.alert != null && alert.alert != undefined) {
-			if (!sentAlerts.has(alert.id)) {
-				newAlerts.push({ al: alert.alert, id: alert.id });
-			}
+			parsedAlerts.push({ al: alert.alert, id: alert.id });
 		}
 	}
-	const sortedAlerts = newAlerts.sort((a, b) => {
+	const newAlerts = parsedAlerts.filter(({ id }) => !sentAlerts.has(id));
+	const sortedAlerts = parsedAlerts.sort((a, b) => {
 		if (!a.al.activePeriod || a.al.activePeriod.length === 0) return 1;
 		if (!b.al.activePeriod || b.al.activePeriod.length === 0) return -1;
 		if (a.al.activePeriod[0].start == b.al.activePeriod[0].start) return 0;
@@ -54,18 +53,36 @@ async function getNewAlerts() {
 }
 
 export async function setupFeed() {
-	if ((await getAlerts()).length === 0) {
-		await getNewAlerts();
-	}
+	await getNewAlerts();
 	await sendNewAlerts();
 	setInterval(sendNewAlerts, INTERVAL);
 }
 
 async function broadcastAlert(alert: transit_realtime.IAlert) {
-	getChannels().forEach(async ({ channel_id }) => {
+	const informedEntity = alert.informedEntity;
+	const favsByGuild: Record<string, string[]> = {};
+	if (informedEntity) {
+		const goodRouteIds: string[] = [];
+		const routeIds = informedEntity.map(e => e.routeId);
+		for (const lineId of routeIds) {
+			if (lineId) {
+				goodRouteIds.push(lineId);
+			}
+		}
+		const lineIds = goodRouteIds.filter(routeId => routeId != '').map(routeId => routeId.slice(0, 4));
+		const favs = getFavoritedForLineIds(lineIds);
+		for (const fav of favs) {
+			if (!favsByGuild[fav.guild_id]) {
+				favsByGuild[fav.guild_id] = [];
+			}
+			favsByGuild[fav.guild_id].push(fav.user_id);
+		}
+	}
+	getChannels().forEach(async ({ channel_id, guild_id }) => {
 		const channel = client.channels.cache.get(channel_id) || await client.channels.fetch(channel_id);
+		const users = favsByGuild[guild_id] || [];
 		if (!channel || !channel.isTextBased()) return;
-		channel.send({ embeds: [alertToEmbed(alert)] });
+		channel.send({ content: users.length > 0 ? `<@${users.join('>, <@')}>` : '', embeds: [alertToEmbed(alert)] });
 	});
 }
 

@@ -3,7 +3,7 @@ Um bot para o Discord que te notifica de alertas da rede Carris Metropolitana.
 Em beta.
 
 Pode convidar o bot para o seu servidor [aqui](https://discord.com/oauth2/authorize?client_id=395958200353947660).
-Para usar, escreve "/aqui" no canal onde queres receber os alertas.
+Para usar, escreve "/ajuda" para ver os comandos disponíveis.
 
 Se quiser correr o próprio bot, recomendo que use o [Docker](https://www.docker.com/).
 Copie o ficheiro `.env.example` para `.env` e preencha com as informações necessárias.

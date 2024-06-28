@@ -1,11 +1,12 @@
-import { type CacheType, CommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { type CacheType, CommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 
 import { setChannel } from '../db';
 import { alertToEmbed, lastAlerts } from '../feeder';
 
 const data = new SlashCommandBuilder()
 	.setName('aqui')
-	.setDescription('Selecionar este canal como o canal de alertas');
+	.setDescription('Selecionar este canal como o canal de alertas')
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
 const execute = async (interaction: CommandInteraction<CacheType>) => {
 	const { channelId, guildId } = interaction;
