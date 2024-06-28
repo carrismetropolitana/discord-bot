@@ -35,7 +35,13 @@ export function getSentAlerts() {
 }
 
 export function favoriteLine(userId: string, guildId: string, alertId: string) {
-	db.query('INSERT INTO favorites (user_id, guild_id, line_id) VALUES (?, ?, ?)').run(userId, guildId, alertId);
+	try {
+		db.query('INSERT INTO favorites (user_id, guild_id, line_id) VALUES (?, ?, ?)').run(userId, guildId, alertId);
+		return { alreadyHad: false };
+	}
+	catch (e) {
+		return { alreadyHad: true };
+	}
 }
 
 export function unfavoriteLine(userId: string, guildId: string, alertId: string) {

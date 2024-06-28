@@ -1,7 +1,7 @@
 import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 
 import { favoriteLine, getFavoriteLinesForUser, unfavoriteLine } from '../db';
-import { lines } from '../utils/lines';
+import { type Line, lines } from '../utils/lines';
 
 const data = new SlashCommandBuilder()
 	.setName('fav')
@@ -46,8 +46,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	}
 	const addOrRemove = interaction.options.getSubcommand();
 	if (addOrRemove === 'add') {
-		favoriteLine(interaction.user.id, guildId, line);
-		await interaction.reply({ content: 'Linha adicionada como favorita!', ephemeral: true });
+		const { alreadyHad } = favoriteLine(interaction.user.id, guildId, line);
+		if (!alreadyHad)
+			await interaction.reply({ content: 'Linha adicionada como favorita!', ephemeral: true });
+		else
+			await interaction.reply({ content: 'Linha já estava como favorita!', ephemeral: true });
 	}
 	else {
 		const { deleted } = unfavoriteLine(interaction.user.id, guildId, line);
@@ -59,6 +62,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		}
 	}
 };
+function linesToAutocompleteOption(lines: Line[]) {
+	return lines.map(line => ({ name: `${line.short_name} - ${line.long_name}`.slice(0, 100), value: line.id }));
+}
 
 const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => {
 	const focusedValue = interaction.options.getFocused();
@@ -66,7 +72,7 @@ const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => 
 	if (cmd === 'add') {
 		const filtered = lines.filter(line => line.short_name.toLowerCase().startsWith(focusedValue.toLowerCase())).slice(0, 25);
 		await interaction.respond(
-			filtered.map(line => ({ name: `${line.short_name} - ${line.long_name}`, value: line.id })),
+			linesToAutocompleteOption(filtered),
 		);
 	}
 	else {
@@ -79,7 +85,7 @@ const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => 
 		const niceLines = userLines.map(line => lines.find(l => l.id === line)).filter(l => l != undefined);
 		const filtered = niceLines.filter(line => line.short_name.toLowerCase().startsWith(focusedValue.toLowerCase())).slice(0, 25);
 		await interaction.respond(
-			filtered.map(line => ({ name: `${line.short_name} - ${line.long_name}`, value: line.id })),
+			linesToAutocompleteOption(filtered),
 		);
 	}
 };
