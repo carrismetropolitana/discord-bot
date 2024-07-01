@@ -1,6 +1,5 @@
 // Require the necessary discord.js classes
 import { Client, Events, GatewayIntentBits } from 'discord.js';
-import 'dotenv/config';
 import { env } from 'process';
 
 import { setupFeed } from './feeder';
