@@ -4,3 +4,4 @@ services:
     volumes:
       - ./db.sqlite:/usr/src/app/db.sqlite
     env_file: .env
+    restart: always
