@@ -19,12 +19,12 @@ RUN cd /temp/dev && bun install --frozen-lockfile
 # then copy all (non-ignored) project files into the image
 FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
 
 # [optional] tests & build
 # ENV NODE_ENV=production
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y nodejs && rm -rf /var/lib/apt/lists/*
+COPY . .
 RUN bun run gen
 RUN bun build src/index.ts --target bun --outfile index.js --sourcemap
 
