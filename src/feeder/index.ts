@@ -81,8 +81,9 @@ async function broadcastAlert(alert: transit_realtime.IAlert) {
 	getChannels().forEach(async ({ channel_id, guild_id }) => {
 		const channel = client.channels.cache.get(channel_id) || await client.channels.fetch(channel_id);
 		const users = favsByGuild[guild_id] || [];
+		const usersSet = new Set(users);
 		if (!channel || !channel.isTextBased()) return;
-		channel.send({ content: users.length > 0 ? `<@${users.join('>, <@')}>` : '', embeds: [alertToEmbed(alert)] });
+		channel.send({ content: usersSet.size > 0 ? `<@${Array.from(usersSet.values()).join('>, <@')}>` : '', embeds: [alertToEmbed(alert)] });
 	});
 }
 

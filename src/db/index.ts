@@ -50,7 +50,8 @@ export function unfavoriteLine(userId: string, guildId: string, alertId: string)
 }
 
 export function getFavoritedForLineIds(lineIds: string[]) {
-	const alerts = db.query<{ guild_id: string, user_id: string }, string[]>('SELECT user_id, guild_id FROM favorites WHERE line_id IN (?)')
+	const sql = 'SELECT user_id, guild_id FROM favorites WHERE line_id IN (' + lineIds.map(() => '?').join(', ') + ')';
+	const alerts = db.query<{ guild_id: string, user_id: string }, string[]>(sql)
 		.all(...lineIds);
 	return alerts;
 }
