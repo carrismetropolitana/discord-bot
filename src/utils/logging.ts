@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { env } from 'bun';
 import colors from 'colors';
-import { messageLink, userMention } from 'discord.js';
+import { userMention } from 'discord.js';
 
 import { client } from '..';
+
+colors.enable();
 
 function formattedDate() {
 	const date = new Date();
