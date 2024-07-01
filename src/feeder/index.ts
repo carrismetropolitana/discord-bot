@@ -2,7 +2,7 @@ import { EmbedBuilder } from 'discord.js';
 
 import { client } from '..';
 import { transit_realtime } from '../.generated/gtfs';
-import { addSentAlert, getChannels, getFavoritedForLineIds, getSentAlerts } from '../db';
+import { addSentAlert, getChannelsAndGuilds, getFavoritedForLineIds, getSentAlerts } from '../db';
 import log from '../utils/logging';
 
 const INTERVAL = 1000 * 60 * 1;
@@ -78,12 +78,17 @@ async function broadcastAlert(alert: transit_realtime.IAlert) {
 			favsByGuild[fav.guild_id].push(fav.user_id);
 		}
 	}
-	getChannels().forEach(async ({ channel_id, guild_id }) => {
-		const channel = client.channels.cache.get(channel_id) || await client.channels.fetch(channel_id);
-		const users = favsByGuild[guild_id] || [];
-		const usersSet = new Set(users);
-		if (!channel || !channel.isTextBased()) return;
-		channel.send({ content: usersSet.size > 0 ? `<@${Array.from(usersSet.values()).join('>, <@')}>` : '', embeds: [alertToEmbed(alert)] });
+	getChannelsAndGuilds().forEach(async ({ channel_id, guild_id }) => {
+		try {
+			const channel = client.channels.cache.get(channel_id) || await client.channels.fetch(channel_id);
+			const users = favsByGuild[guild_id] || [];
+			const usersSet = new Set(users);
+			if (!channel || !channel.isTextBased()) return;
+			channel.send({ content: usersSet.size > 0 ? `<@${Array.from(usersSet.values()).join('>, <@')}>` : '', embeds: [alertToEmbed(alert)] });
+		}
+		catch (e) {
+			log.error('Failed to send alert to channel', channel_id, guild_id, e);
+		}
 	});
 }
 

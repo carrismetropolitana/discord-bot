@@ -21,7 +21,11 @@ export function getChannel(guildId: string) {
 		.get(guildId)?.channel_id;
 }
 
-export function getChannels() {
+export function deleteGuild(guildId: string) {
+	db.query('DELETE FROM guilds WHERE guild_id = ?').run(guildId);
+}
+
+export function getChannelsAndGuilds() {
 	return db.query<{ channel_id: string, guild_id: string }, []>('SELECT channel_id, guild_id FROM guilds').all();
 }
 
