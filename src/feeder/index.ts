@@ -93,14 +93,14 @@ async function broadcastAlert(alert: transit_realtime.IAlert) {
 }
 
 export function alertToEmbed(alert: transit_realtime.IAlert) {
-	const url = alert.url?.translation?.find(t => t.language === 'pt')?.text;
+	const url = `https://carrismetropolitana.pt/alerts/${alert.id}`;
 	const imageUrl = alert.image?.localizedImage?.find(i => i.language === 'pt')?.url;
 	const title = alert.headerText?.translation?.find(t => t.language === 'pt')?.text;
 	const description = alert.descriptionText?.translation?.find(t => t.language === 'pt')?.text;
 	return new EmbedBuilder()
 		.setColor(0xffdd00)
 		.setTitle(title || 'Alerta')
-		.setURL(url || null)
+		.setURL(url)
 		.setImage(imageUrl || null)
 		.setDescription(description || null);
 }
