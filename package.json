@@ -7,20 +7,19 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "bun src/index.ts",
-    "gen": "mkdir src/.generated 2>/dev/null; pbjs -t static-module -w es6 -o src/.generated/gtfs.js src/feeder/gtfs-realtime.proto && pbts -o src/.generated/gtfs.d.ts src/.generated/gtfs.js"
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "protobufjs-cli": "^1.1.2",
-    "@carrismetropolitana/eslint": "^20240622.50.2"
+    "protobufjs-cli": "^1.1.3",
+    "@carrismetropolitana/eslint": "^20250418.42.41"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "colors": "^1.4.0",
-    "discord.js": "^14.15.3",
-    "protobufjs": "^7.3.2"
+    "discord.js": "^14.19.3"
   },
   "trustedDependencies": [
     "protobufjs"

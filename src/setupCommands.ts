@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, type Client, Events, REST, Routes, SlashCommandBuilder, type SlashCommandSubcommandsOnlyBuilder } from 'discord.js';
+import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, type Client, Events, MessageFlags, REST, Routes, SlashCommandBuilder, type SlashCommandSubcommandsOnlyBuilder } from 'discord.js';
 
 import favorite from './commands/favorite';
 import { makeHelpCommand } from './commands/help';
@@ -33,7 +33,7 @@ export default function setupCommands(client: Client<true>) {
 		}
 		catch (error) {
 			log.error(error);
-			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+			await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
 		}
 	});
 

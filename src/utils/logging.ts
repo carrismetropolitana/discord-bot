@@ -22,7 +22,7 @@ async function log(str: string, mention = false) {
 	const debug_id = env.DEBUG_CHANNEL_ID;
 	if (debug_id) {
 		const channel = client.channels.cache.get(debug_id);
-		if (channel && channel.isTextBased()) {
+		if (channel && channel.isSendable()) {
 			const msg = '```ansi\n' + str + '\n```';
 			const owner_id = env.OWNER_ID;
 			if (mention && owner_id) {

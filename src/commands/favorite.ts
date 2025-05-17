@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
 import { favoriteLine, getFavoriteLinesForUser, unfavoriteLine } from '../db';
 import { type Line, lines } from '../utils/lines';
@@ -37,7 +37,7 @@ const data = new SlashCommandBuilder()
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const { guildId } = interaction;
 	if (!guildId) {
-		await interaction.reply({ content: 'Comando disponível apenas em servidores!', ephemeral: true });
+		await interaction.reply({ content: 'Comando disponível apenas em servidores!', flags: MessageFlags.Ephemeral });
 		return;
 	}
 	const subCommand = interaction.options.getSubcommand();
@@ -45,18 +45,18 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		const userLines = getFavoriteLinesForUser(interaction.user.id, guildId);
 		const niceLines = userLines.map(line => lines.find(l => l.id === line)).filter(l => l != undefined);
 		if (niceLines.length === 0) {
-			await interaction.reply({ content: 'Não tem linhas favoritas!', ephemeral: true });
+			await interaction.reply({ content: 'Não tem linhas favoritas!', flags: MessageFlags.Ephemeral });
 			return;
 		}
 		const replyString = niceLines.map(line => `\`${line.short_name} - ${line.long_name}\``).join('\n');
 
-		await interaction.reply({ content: replyString.slice(0, 2000), ephemeral: true });
+		await interaction.reply({ content: replyString.slice(0, 2000), flags: MessageFlags.Ephemeral });
 		return;
 	}
 
 	let line = interaction.options.getString('linha');
 	if (!line) {
-		await interaction.reply({ content: 'Erro ao processar linha', ephemeral: true });
+		await interaction.reply({ content: 'Erro ao processar linha', flags: MessageFlags.Ephemeral });
 		return;
 	}
 	if (line?.includes(' - ')) {
@@ -65,17 +65,17 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	if (subCommand === 'add') {
 		const { alreadyHad } = favoriteLine(interaction.user.id, guildId, line);
 		if (!alreadyHad)
-			await interaction.reply({ content: 'Linha adicionada como favorita!', ephemeral: true });
+			await interaction.reply({ content: 'Linha adicionada como favorita!', flags: MessageFlags.Ephemeral });
 		else
-			await interaction.reply({ content: 'Linha já estava como favorita!', ephemeral: true });
+			await interaction.reply({ content: 'Linha já estava como favorita!', flags: MessageFlags.Ephemeral });
 	}
 	else if (subCommand === 'rem') {
 		const { deleted } = unfavoriteLine(interaction.user.id, guildId, line);
 		if (deleted) {
-			await interaction.reply({ content: 'Linha removida como favorita!', ephemeral: true });
+			await interaction.reply({ content: 'Linha removida como favorita!', flags: MessageFlags.Ephemeral });
 		}
 		else {
-			await interaction.reply({ content: 'Linha não estava como favorita!', ephemeral: true });
+			await interaction.reply({ content: 'Linha não estava como favorita!', flags: MessageFlags.Ephemeral });
 		}
 	}
 };
