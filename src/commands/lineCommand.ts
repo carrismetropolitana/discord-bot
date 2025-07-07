@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ButtonStyle, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, MessageFlags, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonStyle, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, InteractionContextType, MessageFlags, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
 import { lines } from '../utils/lines';
 import { getVehicles, type Vehicle } from '../utils/vehicles';
@@ -12,7 +12,8 @@ const data = new SlashCommandBuilder()
 			.setAutocomplete(true)
 			.setDescription('ID ou nome da linha')
 			.setRequired(true),
-	);
+	)
+	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
 async function getHeadsign(pattern: string) {
 	const pInfo = await fetch('https://api.cmet.pt/patterns/' + pattern).then(r => r.json());

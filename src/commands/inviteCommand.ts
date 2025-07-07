@@ -1,8 +1,9 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type CacheType, CommandInteraction, type MessageActionRowComponentBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type CacheType, CommandInteraction, InteractionContextType, type MessageActionRowComponentBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
 const data = new SlashCommandBuilder()
 	.setName('invite')
-	.setDescription('Permite-te adicionar este bot ao teu servidor!');
+	.setDescription('Permite-te adicionar este bot ao teu servidor!')
+	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
 const execute = async (interaction: CommandInteraction<CacheType>) => {
 	await interaction.reply({

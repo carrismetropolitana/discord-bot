@@ -1,4 +1,4 @@
-import { AttachmentBuilder, AutocompleteInteraction, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
+import { AttachmentBuilder, AutocompleteInteraction, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, InteractionContextType, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
 import render from '../utils/render';
 import { stops } from '../utils/stops';
@@ -13,7 +13,8 @@ const data = new SlashCommandBuilder()
 			.setAutocomplete(true)
 			.setDescription('ID ou matrícula do veículo')
 			.setRequired(true),
-	);
+	)
+	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
 async function getHeadsign(pattern: string) {
 	const pInfo = await fetch('https://api.cmet.pt/patterns/' + pattern).then(r => r.json());
