@@ -1,5 +1,6 @@
-import { ActionRowBuilder, AttachmentBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, type MessageActionRowComponentBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, AutocompleteInteraction, ButtonBuilder, ButtonInteraction, ButtonStyle, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, type MessageActionRowComponentBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
+import { getArrivals } from '../utils/departures';
 import render from '../utils/render';
 import { stops } from '../utils/stops';
 
@@ -17,7 +18,7 @@ const data = new SlashCommandBuilder()
 const execute = async (interaction: CommandInteraction<CacheType>) => {
 	const stop = (interaction.options as CommandInteractionOptionResolver).getString('stop');
 	const stopInfo = stops.find(s => s.id === stop);
-	if (!stopInfo) return interaction.reply(':x: Paragem desconhecida: `' + stop + '`');
+	if (!stopInfo) return ({ content: ':x: Paragem desconhecida: `' + stop + '`.', flags: [MessageFlags.Ephemeral] });
 	const image = await render.renderStopMap(stopInfo.lat, stopInfo.lon);
 	interaction.reply({
 		components: [
@@ -51,12 +52,12 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
 							new ButtonBuilder()
 								.setStyle(ButtonStyle.Primary)
 								.setLabel('Ver partidas')
-								.setCustomId('departures-' + stopInfo.id),
+								.setCustomId('paragem:' + stopInfo.id),
 						),
 				),
 		],
 		files: [new AttachmentBuilder(image, { name: 'map.png' })],
-		flags: [MessageFlags.IsComponentsV2] });
+		flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral] });
 };
 
 const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => {
@@ -74,8 +75,22 @@ const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => 
 	));
 };
 
+const button = async (interaction: ButtonInteraction<CacheType>) => {
+	const stopId = interaction.customId.split(':')[1];
+	const response = await getArrivals(stopId);
+	return interaction.reply({
+		components: [
+			new TextDisplayBuilder().setContent('Partidas'),
+			new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
+			new TextDisplayBuilder().setContent(response),
+		],
+		flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
+	});
+};
+
 export default {
 	autocomplete,
+	button,
 	data,
 	execute,
 };
