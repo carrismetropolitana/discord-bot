@@ -1,5 +1,5 @@
 /* eslint-disable perfectionist/sort-imports */
-import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, type Client, Events, MessageFlags, REST, Routes, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, type SlashCommandOptionsOnlyBuilder, type SlashCommandSubcommandsOnlyBuilder, TextDisplayBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, type CacheType, ChatInputCommandInteraction, type Client, Events, MessageFlags, REST, Routes, SlashCommandBuilder, type SlashCommandOptionsOnlyBuilder, type SlashCommandSubcommandsOnlyBuilder } from 'discord.js';
 
 import favorite from './commands/favoriteCommand';
 import help from './commands/helpCommand';
@@ -9,10 +9,11 @@ import { clientId, token } from './env';
 import log from './utils/logging';
 import stopCommand from './commands/stopCommand';
 import vehicleCommand from './commands/vehicleCommand';
-import { getArrivals } from './utils/departures';
+import lineCommand from './commands/lineCommand';
 
 const rawCommands: {
 	autocomplete?: (interaction: AutocompleteInteraction<CacheType>) => Promise<unknown>
+	button?: (interaction: ButtonInteraction<CacheType>) => Promise<unknown>
 	data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder
 	execute: (interaction: ChatInputCommandInteraction) => Promise<unknown>
 }[] = [
@@ -22,6 +23,7 @@ const rawCommands: {
 	invite,
 	stopCommand,
 	vehicleCommand,
+	lineCommand,
 ];
 
 const commands = Object.fromEntries(rawCommands.map(command => [command.data.name, command]));
@@ -64,17 +66,14 @@ export default function setupCommands(client: Client<true>) {
 	client.on(Events.InteractionCreate, async (interaction) => {
 		if (!interaction.isButton()) return;
 
-		if (interaction.customId.startsWith('departures-')) {
-			const stopId = interaction.customId.split('-')[1];
-			const response = await getArrivals(stopId);
-			return interaction.reply({
-				components: [
-					new TextDisplayBuilder().setContent('Partidas'),
-					new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
-					new TextDisplayBuilder().setContent(response),
-				],
-				flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
-			});
+		const buttonName = interaction.customId.split(':')[0];
+		const command = commands[buttonName];
+		if (!command || !command.button) return interaction.reply({ content: ':x: Botão desconhecido', flags: [MessageFlags.Ephemeral] });
+		try {
+			await command.button(interaction);
+		}
+		catch (error) {
+			log.error(error);
 		}
 	});
 
