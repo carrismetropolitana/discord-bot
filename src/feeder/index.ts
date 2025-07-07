@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, type MessageActionRowComponentBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder } from 'discord.js';
 
 import type { Alert } from './alerts';
 
@@ -79,7 +79,17 @@ async function broadcastAlert(alert: Alert) {
 			const users = favsByGuild[guild_id] || [];
 			const usersSet = new Set(users);
 			if (!channel || !channel.isSendable()) return;
-			channel.send({ content: usersSet.size > 0 ? `<@${Array.from(usersSet.values()).join('>, <@')}>` : '', embeds: [alertToEmbed(alert)] });
+			const components = [];
+			if (usersSet.size > 0) {
+				const users = new TextDisplayBuilder().setContent(`<@${Array.from(usersSet.values()).join('>, <@')}>`);
+				const divider = new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true);
+				components.push(users, divider);
+			}
+			components.push(alertToContainer(alert));
+			channel.send({
+				components: components,
+				flags: [MessageFlags.IsComponentsV2],
+			});
 		}
 		catch (e) {
 			log.error('Failed to send alert to channel', channel_id, guild_id, e);
@@ -87,15 +97,32 @@ async function broadcastAlert(alert: Alert) {
 	});
 }
 
-export function alertToEmbed(alert: Alert) {
+export function alertToContainer(alert: Alert) {
 	const url = `https://carrismetropolitana.pt/alerts/${alert.alert_id}`;
 	const imageUrl = alert.image?.localizedImage?.find(i => i.language === 'pt')?.url;
 	const title = alert.header_text?.translation?.find(t => t.language === 'pt')?.text;
 	const description = alert.description_text?.translation?.find(t => t.language === 'pt')?.text;
-	return new EmbedBuilder()
-		.setColor(0xffdd00)
-		.setTitle(title || 'Alerta')
-		.setURL(url)
-		.setImage(imageUrl || null)
-		.setDescription(description || null);
+	const container = new ContainerBuilder()
+		.setAccentColor(0xffdd00)
+		.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent('### ' + (title || 'Alerta') + '\n' + (description || null)),
+		);
+	if (imageUrl) container.addMediaGalleryComponents(
+		new MediaGalleryBuilder()
+			.addItems(
+				new MediaGalleryItemBuilder()
+					.setURL(imageUrl || ''),
+			),
+	);
+	container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+	container.addActionRowComponents(
+		new ActionRowBuilder<MessageActionRowComponentBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Link)
+					.setLabel('Ver alerta')
+					.setURL(url),
+			),
+	);
+	return container;
 }
