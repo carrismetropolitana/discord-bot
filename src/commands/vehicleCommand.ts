@@ -33,7 +33,7 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
 	const vehicles = await getVehicles();
 	const vehicleInfo = vehicles.find(v => v.id === vehicle);
 	if (!vehicleInfo) return interaction.reply({ content: ':x: Veículo desconhecido: `' + vehicle + '`.', flags: [MessageFlags.Ephemeral] });
-	if (!vehicleInfo.timestamp) return interaction.reply({ content: ':x: Este veículo não apresenta quaisquer dados de viagem. Se achas que isto é um erro, por favor contacta <@896732255534338078>.', flags: [MessageFlags.Ephemeral] });
+	if (!vehicleInfo.timestamp) return interaction.reply({ content: ':x: Este veículo não apresenta quaisquer dados de viagem. Se achas que isto é um erro, por favor abre um issue [aqui](<https://github.com/carrismetropolitana/discord-bot/issues>).', flags: [MessageFlags.Ephemeral] });
 	interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 	vehicleInfo.state = 'normal';
 	const now = Date.now();
