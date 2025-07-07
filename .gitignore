@@ -176,3 +176,13 @@ dist
 
 **/.generated
 db.sqlite
+bun.lockb
+package-lock.json
+package.json
+
+assets/*
+!assets/bus-normal.png
+!assets/bus-error.png
+!assets/bus-delay.png
+!assets/stop.png
+bun.lockb

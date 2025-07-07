@@ -1,7 +1,7 @@
-import { type CacheType, CommandInteraction, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { type CacheType, CommandInteraction, MessageFlags, PermissionFlagsBits, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
 import { setChannel } from '../db';
-import { alertToEmbed, lastAlerts } from '../feeder';
+import { alertToContainer, lastAlerts } from '../feeder';
 
 const data = new SlashCommandBuilder()
 	.setName('aqui')
@@ -15,10 +15,14 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
 		return;
 	}
 	setChannel(guildId, channelId);
-	const embeds = lastAlerts.alerts.slice(0, 5).reverse().map(alertToEmbed);
+	const embeds = lastAlerts.alerts.slice(0, 5).reverse().map(alertToContainer);
 	await interaction.reply({
-		content: 'Canal selecionado, aqui estão os alertas mais recentes:',
-		embeds,
+		components: [
+			new TextDisplayBuilder().setContent('Canal selecionado, aqui estão os alertas mais recentes:'),
+			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true),
+			...embeds,
+		],
+		flags: [MessageFlags.IsComponentsV2],
 	});
 };
 

@@ -10,16 +10,19 @@
     "typecheck": "bun --bun tsc --noEmit"
   },
   "devDependencies": {
+    "@carrismetropolitana/eslint": "^20250418.42.41",
     "@types/bun": "latest",
-    "protobufjs-cli": "^1.1.3",
-    "@carrismetropolitana/eslint": "^20250418.42.41"
+    "protobufjs-cli": "^1.1.3"
   },
   "peerDependencies": {
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@types/staticmaps": "^1.12.5",
+    "canvas": "^3.1.2",
     "colors": "^1.4.0",
-    "discord.js": "^14.19.3"
+    "discord.js": "^14.19.3",
+    "staticmaps": "^1.13.1"
   },
   "trustedDependencies": [
     "protobufjs"
