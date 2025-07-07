@@ -31,8 +31,8 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
 	const vehicle = (interaction.options as CommandInteractionOptionResolver).getString('carro');
 	const vehicles = await getVehicles();
 	const vehicleInfo = vehicles.find(v => v.id === vehicle);
-	if (!vehicleInfo) return interaction.reply(':x: Veículo desconhecida: `' + vehicle + '`');
-	interaction.deferReply();
+	if (!vehicleInfo) return ({ content: ':x: Veículo desconhecido: `' + vehicle + '`.', flags: [MessageFlags.Ephemeral] });
+	interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 	vehicleInfo.state = 'normal';
 	const now = Date.now();
 	if (now > (vehicleInfo.timestamp + 300) * 1000) vehicleInfo.state = 'delay';
