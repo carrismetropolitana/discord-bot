@@ -1,20 +1,28 @@
-import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, type Client, Events, MessageFlags, REST, Routes, SlashCommandBuilder, type SlashCommandSubcommandsOnlyBuilder } from 'discord.js';
+/* eslint-disable perfectionist/sort-imports */
+import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, type Client, Events, MessageFlags, REST, Routes, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, type SlashCommandOptionsOnlyBuilder, type SlashCommandSubcommandsOnlyBuilder, TextDisplayBuilder } from 'discord.js';
 
-import favorite from './commands/favorite';
-import { makeHelpCommand } from './commands/help';
-import selectChannel from './commands/selectChannel';
+import favorite from './commands/favoriteCommand';
+import help from './commands/helpCommand';
+import invite from './commands/inviteCommand';
+import selectChannel from './commands/selectChannelCommand';
 import { clientId, token } from './env';
 import log from './utils/logging';
+import stopCommand from './commands/stopCommand';
+import vehicleCommand from './commands/vehicleCommand';
+import { getArrivals } from './utils/departures';
 
 const rawCommands: {
 	autocomplete?: (interaction: AutocompleteInteraction<CacheType>) => Promise<unknown>
-	data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder
+	data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder
 	execute: (interaction: ChatInputCommandInteraction) => Promise<unknown>
 }[] = [
+	help,
 	selectChannel,
 	favorite,
+	invite,
+	stopCommand,
+	vehicleCommand,
 ];
-rawCommands.push(makeHelpCommand(rawCommands.map(command => [command.data.name, command.data.description])));
 
 const commands = Object.fromEntries(rawCommands.map(command => [command.data.name, command]));
 const updateCommands = rawCommands.map(command => command.data.toJSON());
@@ -49,6 +57,24 @@ export default function setupCommands(client: Client<true>) {
 		}
 		catch (error) {
 			log.error(error);
+		}
+	});
+
+	// Button interactions
+	client.on(Events.InteractionCreate, async (interaction) => {
+		if (!interaction.isButton()) return;
+
+		if (interaction.customId.startsWith('departures-')) {
+			const stopId = interaction.customId.split('-')[1];
+			const response = await getArrivals(stopId);
+			return interaction.reply({
+				components: [
+					new TextDisplayBuilder().setContent('Partidas'),
+					new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
+					new TextDisplayBuilder().setContent(response),
+				],
+				flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral],
+			});
 		}
 	});
 
