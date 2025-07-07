@@ -54,6 +54,9 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
 					new TextDisplayBuilder().setContent('🏳️ **Serviço: **' + (vehicleInfo.line_id ? (vehicleInfo.line_id + ' | ' + await getHeadsign(vehicleInfo.pattern_id)) : ':x:')),
 					new TextDisplayBuilder().setContent('🗺️ **Posição: **' + vehicleInfo.lat.toFixed(5) + ' ' + vehicleInfo.lon.toFixed(5)),
 					new TextDisplayBuilder().setContent('👋 **Próxima Paragem: **' + getStop(vehicleInfo.stop_id)),
+					...(vehicleInfo.capacity_seated ? [
+						new TextDisplayBuilder().setContent('💺 **Capacidade: **' + (vehicleInfo.capacity_total + 'px (' + vehicleInfo.capacity_seated + ' sentados + ' + vehicleInfo.capacity_standing + ' de pé)')),
+					] : []),
 					new TextDisplayBuilder().setContent('⏰ **Último update: **<t:' + (vehicleInfo.timestamp + ':R>')),
 				)
 				.addMediaGalleryComponents(
