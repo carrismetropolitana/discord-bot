@@ -23,7 +23,7 @@ import fs from 'fs';
 // generates a rotated version of the bus icon
 async function rotateMarker(inputPath: string, angle: number) {
 	angle = Math.round(angle / 5) * 5; // we're fine with just 5 degrees of variation. (i think)
-	console.log(inputPath);
+
 	if (fs.existsSync(inputPath + '_' + angle + '.png')) return inputPath + '_' + angle + '.png';
 	const img = await loadImage(inputPath + '.png');
 	const canvas = createCanvas(img.height, img.height);
