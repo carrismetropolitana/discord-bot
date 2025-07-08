@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, AutocompleteInteraction, ButtonBuilder, ButtonInteraction, ButtonStyle, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, InteractionContextType, MediaGalleryBuilder, MediaGalleryItemBuilder, type MessageActionRowComponentBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, AutocompleteInteraction, ButtonBuilder, ButtonInteraction, ButtonStyle, type CacheType, ChatInputCommandInteraction, ContainerBuilder, InteractionContextType, MediaGalleryBuilder, MediaGalleryItemBuilder, type MessageActionRowComponentBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
 import { getArrivals } from '../utils/departures';
 import render from '../utils/render';
@@ -16,8 +16,8 @@ const data = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
-const execute = async (interaction: CommandInteraction<CacheType>) => {
-	const stop = (interaction.options as CommandInteractionOptionResolver).getString('stop');
+const execute = async (interaction: ChatInputCommandInteraction) => {
+	const stop = interaction.options.getString('stop');
 	const stopInfo = stops.find(s => s.id === stop);
 	if (!stopInfo) return ({ content: ':x: Paragem desconhecida: `' + stop + '`.', flags: [MessageFlags.Ephemeral] });
 	const image = await render.renderStopMap(stopInfo.lat, stopInfo.lon);

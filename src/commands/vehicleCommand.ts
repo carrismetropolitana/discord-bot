@@ -1,4 +1,4 @@
-import { AttachmentBuilder, AutocompleteInteraction, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, InteractionContextType, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
+import { AttachmentBuilder, AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, ContainerBuilder, InteractionContextType, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
 import render from '../utils/render';
 import { stops } from '../utils/stops';
@@ -28,8 +28,8 @@ function getStop(id: string) {
 	return stopInfo.long_name + ' | `#' + id + '`';
 }
 
-const execute = async (interaction: CommandInteraction<CacheType>) => {
-	const vehicle = (interaction.options as CommandInteractionOptionResolver).getString('carro');
+const execute = async (interaction: ChatInputCommandInteraction) => {
+	const vehicle = interaction.options.getString('carro');
 	const vehicles = await getVehicles();
 	const vehicleInfo = vehicles.find(v => v.id === vehicle);
 	if (!vehicleInfo) return interaction.reply({ content: ':x: Veículo desconhecido: `' + vehicle + '`.', flags: [MessageFlags.Ephemeral] });

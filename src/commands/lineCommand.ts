@@ -1,7 +1,7 @@
-import { AutocompleteInteraction, ButtonStyle, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, InteractionContextType, MessageFlags, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
+import { AutocompleteInteraction, ButtonStyle, type CacheType, ChatInputCommandInteraction, ContainerBuilder, InteractionContextType, MessageFlags, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
 import { lines } from '../utils/lines';
-import { getVehicles, type Vehicle } from '../utils/vehicles';
+import { getVehicles } from '../utils/vehicles';
 
 const data = new SlashCommandBuilder()
 	.setName('linha')
@@ -21,8 +21,8 @@ async function getHeadsign(pattern: string) {
 	return pInfo[0].headsign;
 }
 
-const execute = async (interaction: CommandInteraction<CacheType>) => {
-	const line = (interaction.options as CommandInteractionOptionResolver).getString('line');
+const execute = async (interaction: ChatInputCommandInteraction) => {
+	const line = interaction.options.getString('line');
 	const vehicles = await getVehicles();
 	const now = Date.now();
 	const lineInfo = lines.find(a => a.id === line);
