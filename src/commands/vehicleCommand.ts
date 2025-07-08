@@ -1,4 +1,4 @@
-import { AttachmentBuilder, AutocompleteInteraction, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
+import { AttachmentBuilder, AutocompleteInteraction, type CacheType, CommandInteraction, CommandInteractionOptionResolver, ContainerBuilder, InteractionContextType, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
 import render from '../utils/render';
 import { stops } from '../utils/stops';
@@ -13,7 +13,8 @@ const data = new SlashCommandBuilder()
 			.setAutocomplete(true)
 			.setDescription('ID ou matrícula do veículo')
 			.setRequired(true),
-	);
+	)
+	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
 async function getHeadsign(pattern: string) {
 	const pInfo = await fetch('https://api.cmet.pt/patterns/' + pattern).then(r => r.json());
@@ -31,8 +32,9 @@ const execute = async (interaction: CommandInteraction<CacheType>) => {
 	const vehicle = (interaction.options as CommandInteractionOptionResolver).getString('carro');
 	const vehicles = await getVehicles();
 	const vehicleInfo = vehicles.find(v => v.id === vehicle);
-	if (!vehicleInfo) return interaction.reply(':x: Veículo desconhecida: `' + vehicle + '`');
-	interaction.deferReply();
+	if (!vehicleInfo) return interaction.reply({ content: ':x: Veículo desconhecido: `' + vehicle + '`.', flags: [MessageFlags.Ephemeral] });
+	if (!vehicleInfo.timestamp) return interaction.reply({ content: ':x: Este veículo não apresenta quaisquer dados de viagem. Se achas que isto é um erro, por favor abre um issue [aqui](<https://github.com/carrismetropolitana/discord-bot/issues>).', flags: [MessageFlags.Ephemeral] });
+	interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 	vehicleInfo.state = 'normal';
 	const now = Date.now();
 	if (now > (vehicleInfo.timestamp + 300) * 1000) vehicleInfo.state = 'delay';

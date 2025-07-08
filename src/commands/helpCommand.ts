@@ -1,8 +1,9 @@
-import { type CacheType, CommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { type CacheType, CommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 
 const data = new SlashCommandBuilder()
 	.setName('ajuda')
-	.setDescription('Lista todos os comandos disponíveis.');
+	.setDescription('Lista todos os comandos disponíveis.')
+	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
 const execute = async (interaction: CommandInteraction<CacheType>) => {
 	const cmds = await interaction.client.application?.commands.fetch();

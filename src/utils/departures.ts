@@ -1,3 +1,4 @@
+import logging from './logging';
 import { getVehicles } from './vehicles';
 
 interface Arrival {
@@ -17,7 +18,18 @@ interface Arrival {
 }
 
 export async function getArrivals(stopId: string): Promise<string> {
-	let arrivals: Arrival[] = (await fetch('https://api.carrismetropolitana.pt/v2/arrivals/by_stop/' + stopId).then(r => r.json()));
+	let arrivals: Arrival[] = [];
+	try {
+		const response = (await fetch('https://api.carrismetropolitana.pt/v2/arrivals/by_stop/' + stopId));
+
+		if (!response.ok) return 'Falha ao efetuar pedido. Erro ' + response.status + ' `' + response.statusText + '`';
+
+		arrivals = await response.json();
+	}
+	catch (error) {
+		logging.error('Falha no fetch das partidas: ' + error);
+	}
+
 	const now = Date.now() / 1000;
 	arrivals = arrivals.filter(a => (a.scheduled_arrival_unix > now || a.estimated_arrival_unix > now) && !a.observed_arrival_unix);
 	arrivals = arrivals.slice(0, 10);

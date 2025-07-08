@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
 import { favoriteLine, getFavoriteLinesForUser, unfavoriteLine } from '../db';
 import { type Line, lines } from '../utils/lines';
@@ -32,7 +32,8 @@ const data = new SlashCommandBuilder()
 		subcommand
 			.setName('list')
 			.setDescription('Listar linhas favoritas'),
-	);
+	)
+	.setContexts(InteractionContextType.Guild);
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const { guildId } = interaction;
