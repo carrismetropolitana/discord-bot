@@ -41,9 +41,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		departureSections.push(
 			new SectionBuilder()
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent('### ' + lineInfo.id + ' | ' + pattern.headsign),
-					new TextDisplayBuilder().setContent(vehiclesContent),
-					new TextDisplayBuilder().setContent('-# Pattern ID: `' + pattern.id + '`'),
+					new TextDisplayBuilder().setContent('### ' + lineInfo.id + ' | ' + pattern.headsign + '\n' + vehiclesContent + '\n-# Pattern ID: `' + pattern.id + '`'),
 				)
 				.setButtonAccessory(
 					button => button
@@ -54,19 +52,22 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		);
 	});
 
+	const container = new ContainerBuilder()
+		.setAccentColor(0xffdd00)
+		.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent('### ' + lineInfo.id + ' ' + lineInfo.long_name),
+		)
+		.addSeparatorComponents(
+			new SeparatorBuilder({ divider: true, spacing: SeparatorSpacingSize.Small }),
+		);
+	departureSections.forEach((sect) => {
+		container.addSectionComponents(sect);
+		container.addSeparatorComponents(new SeparatorBuilder({ divider: false, spacing: SeparatorSpacingSize.Small }));
+	});
+
 	interaction.reply({
 		components: [
-			new ContainerBuilder()
-				.setAccentColor(0xffdd00)
-				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent('### ' + lineInfo.id + ' ' + lineInfo.long_name),
-				)
-				.addSeparatorComponents(
-					new SeparatorBuilder({ divider: true, spacing: SeparatorSpacingSize.Small }),
-				)
-				.addSectionComponents(
-					departureSections,
-				),
+			container,
 		],
 		flags: [MessageFlags.IsComponentsV2, MessageFlags.Ephemeral] });
 };
