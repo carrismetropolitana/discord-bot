@@ -5,6 +5,7 @@ import favorite from './commands/favoriteCommand';
 import help from './commands/helpCommand';
 import invite from './commands/inviteCommand';
 import selectChannel from './commands/selectChannelCommand';
+import statusCommand from './commands/statusCommand';
 import { clientId, token } from './env';
 import log from './utils/logging';
 import stopCommand from './commands/stopCommand';
@@ -18,6 +19,7 @@ const rawCommands: {
 	execute: (interaction: ChatInputCommandInteraction) => Promise<unknown>
 }[] = [
 	help,
+	statusCommand,
 	selectChannel,
 	favorite,
 	invite,
