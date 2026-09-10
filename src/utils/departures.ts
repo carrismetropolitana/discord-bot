@@ -1,3 +1,4 @@
+import { normalizeVehicleId } from './ids';
 import logging from './logging';
 import { getVehicles } from './vehicles';
 
@@ -35,6 +36,13 @@ export async function getArrivals(stopId: string): Promise<string> {
 	arrivals = arrivals.slice(0, 10);
 	const vehicles = await getVehicles();
 	if (arrivals.length === 0) return '*Sem serviço para este dia*';
-	return arrivals.map(arrival =>
-		('<t:' + (arrival.estimated_arrival_unix || arrival.scheduled_arrival_unix) + ':R> ' + arrival.line_id + ' ' + arrival.headsign + ' ' + (arrival.stop_sequence === 1 ? '**(PARTIDA)**' : '') + '\n-# **Veículo:** ' + (arrival.vehicle_id ? ('`' + arrival.vehicle_id + '` ' + vehicles.find(v => v.id === arrival.vehicle_id)?.make + ' ' + vehicles.find(v => v.id === arrival.vehicle_id)?.model) : 'Sem veículo atribuido'))).join('\n');
+	return arrivals.map((arrival) => {
+		let vehicleInfo = 'Sem veículo atribuido';
+		if (arrival.vehicle_id) {
+			const vehicleId = normalizeVehicleId(arrival.vehicle_id);
+			const vehicle = vehicles.find(v => normalizeVehicleId(v.id) === vehicleId);
+			vehicleInfo = '`' + vehicleId + '`' + (vehicle?.make ? (' ' + vehicle.make + ' ' + vehicle.model) : '');
+		}
+		return '<t:' + (arrival.estimated_arrival_unix || arrival.scheduled_arrival_unix) + ':R> ' + arrival.line_id + ' ' + arrival.headsign + ' ' + (arrival.stop_sequence === 1 ? '**(PARTIDA)**' : '') + '\n-# **Veículo:** ' + vehicleInfo;
+	}).join('\n');
 }

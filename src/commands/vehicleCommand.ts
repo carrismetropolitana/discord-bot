@@ -1,8 +1,10 @@
 import { AttachmentBuilder, AutocompleteInteraction, type CacheType, ChatInputCommandInteraction, ContainerBuilder, InteractionContextType, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
+import { normalizeVehicleId } from '../utils/ids';
+import { getHeadsign } from '../utils/patterns';
 import render from '../utils/render';
 import { stops } from '../utils/stops';
-import { getVehicles, type Vehicle } from '../utils/vehicles';
+import { getVehicles } from '../utils/vehicles';
 
 const data = new SlashCommandBuilder()
 	.setName('veiculo')
@@ -16,12 +18,6 @@ const data = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
-async function getHeadsign(pattern: string) {
-	const pInfo = await fetch('https://api.cmet.pt/patterns/' + pattern).then(r => r.json());
-	if (!pInfo || pInfo.length < 1 || !pInfo[0].headsign) return 'N/A';
-	return pInfo[0].headsign;
-}
-
 function getStop(id: string) {
 	const stopInfo = stops.find(a => a.id === id);
 	if (!stopInfo) return ':x:';
@@ -29,9 +25,9 @@ function getStop(id: string) {
 }
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
-	const vehicle = interaction.options.getString('carro');
+	const vehicle = interaction.options.getString('carro', true);
 	const vehicles = await getVehicles();
-	const vehicleInfo = vehicles.find(v => v.id === vehicle);
+	const vehicleInfo = vehicles.find(v => normalizeVehicleId(v.id) === normalizeVehicleId(vehicle));
 	if (!vehicleInfo) return interaction.reply({ content: ':x: Veículo desconhecido: `' + vehicle + '`.', flags: [MessageFlags.Ephemeral] });
 	if (!vehicleInfo.timestamp) return interaction.reply({ content: ':x: Este veículo não apresenta quaisquer dados de viagem. Se achas que isto é um erro, por favor abre um issue [aqui](<https://github.com/carrismetropolitana/discord-bot/issues>).', flags: [MessageFlags.Ephemeral] });
 	interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
@@ -74,12 +70,10 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		flags: [MessageFlags.IsComponentsV2] });
 };
 
-let vehicles: Vehicle[];
-
 const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => {
-	if (!vehicles) vehicles = await getVehicles();
+	const vehicles = await getVehicles();
 	const focusedValue = interaction.options.getFocused();
-	const filtered = vehicles.filter(v => v.id.split('|')[1].toLowerCase().startsWith(focusedValue.toLowerCase()) || v.license_plate?.toLowerCase().startsWith(focusedValue.toLowerCase()) || v.make?.toLowerCase().startsWith(focusedValue.toLowerCase()) || v.model?.toLowerCase().startsWith(focusedValue.toLowerCase()));
+	const filtered = vehicles.filter(v => normalizeVehicleId(v.id).toLowerCase().startsWith(focusedValue.toLowerCase()) || v.license_plate?.toLowerCase().startsWith(focusedValue.toLowerCase()) || v.make?.toLowerCase().startsWith(focusedValue.toLowerCase()) || v.model?.toLowerCase().startsWith(focusedValue.toLowerCase()));
 	await interaction.respond(filtered.slice(0, 25).map(v => ({ name: v.id + ' | ' + v.license_plate + (v.make ? (' - ' + v.make + ' ' + v.model) : ''), value: v.id })));
 };
 
