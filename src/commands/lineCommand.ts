@@ -1,6 +1,8 @@
 import { AutocompleteInteraction, ButtonStyle, type CacheType, ChatInputCommandInteraction, ContainerBuilder, InteractionContextType, MessageFlags, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 
+import { stripOperatorPrefix } from '../utils/ids';
 import { lines } from '../utils/lines';
+import { getHeadsign } from '../utils/patterns';
 import { getVehicles } from '../utils/vehicles';
 
 const data = new SlashCommandBuilder()
@@ -15,12 +17,6 @@ const data = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
-async function getHeadsign(pattern: string) {
-	const pInfo = await fetch('https://api.cmet.pt/patterns/' + pattern).then(r => r.json());
-	if (!pInfo || pInfo.length < 1 || !pInfo[0].headsign) return 'N/A';
-	return pInfo[0].headsign;
-}
-
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const line = interaction.options.getString('line');
 	const vehicles = await getVehicles();
@@ -34,7 +30,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	const departureSections: SectionBuilder[] = [];
 	patterns.forEach((pattern) => {
 		let vehiclesContent = '*Não há veículos a efetuar este serviço*';
-		const vehiclesFiltered = vehiclesInfo.filter(vec => vec.pattern_id === pattern.id);
+		const vehiclesFiltered = vehiclesInfo.filter(vec => stripOperatorPrefix(vec.pattern_id) === stripOperatorPrefix(pattern.id));
 		if (vehiclesFiltered.length > 0) {
 			vehiclesContent = vehiclesFiltered.map(vec => '`' + vec.id + '` | ' + vec.make + ' ' + vec.model).join('\n');
 		}

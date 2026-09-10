@@ -31,6 +31,39 @@ export interface Vehicle {
 	wheelchair_accessible?: string
 };
 
+// The API switched `timestamp` from seconds to milliseconds; accept either so the
+// rest of the bot can keep treating it as unix seconds. 1e11 seconds is the year
+// 5138, so anything above it is milliseconds.
+function toUnixSeconds(timestamp: number): number {
+	if (!timestamp) return timestamp;
+	return timestamp > 1e11 ? Math.floor(timestamp / 1000) : timestamp;
+}
+
+async function fetchVehicles(): Promise<Vehicle[]> {
+	const vehicles: Vehicle[] = await (await fetch('https://api.carrismetropolitana.pt/v2/vehicles')).json();
+	return vehicles.map(vehicle => ({ ...vehicle, timestamp: toUnixSeconds(vehicle.timestamp) }));
+}
+
+// The whole fleet comes down in one request, and autocomplete asks for it on every
+// keystroke, so hold it briefly. Kept well under the 5 minute threshold /veiculo
+// reads `delay` off, so cache age can't mark a healthy vehicle as delayed, and long
+// enough that the index rebuilds itself instead of needing a restart.
+const VEHICLES_TTL = 30_000;
+
+let cachedAt = 0;
+let cached: null | Promise<Vehicle[]> = null;
+
 export async function getVehicles(): Promise<Vehicle[]> {
-	return (await fetch('https://api.carrismetropolitana.pt/v2/vehicles')).json();
+	let request = cached;
+	if (!request || Date.now() - cachedAt > VEHICLES_TTL) {
+		cachedAt = Date.now();
+		request = fetchVehicles();
+		cached = request;
+		// don't serve a failed request for the rest of the TTL
+		request.catch(() => {
+			if (cached === request) cached = null;
+		});
+	}
+	// callers mutate `state` on what they get back, so hand out copies
+	return (await request).map(vehicle => ({ ...vehicle }));
 }
