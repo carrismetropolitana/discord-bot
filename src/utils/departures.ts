@@ -1,6 +1,6 @@
 import { normalizeVehicleId } from './ids';
 import logging from './logging';
-import { getVehicles } from './vehicles';
+import { describeVehicle, getVehicles } from './vehicles';
 
 interface Arrival {
 	estimated_arrival: string
@@ -41,7 +41,7 @@ export async function getArrivals(stopId: string): Promise<string> {
 		if (arrival.vehicle_id) {
 			const vehicleId = normalizeVehicleId(arrival.vehicle_id);
 			const vehicle = vehicles.find(v => normalizeVehicleId(v.id) === vehicleId);
-			vehicleInfo = '`' + vehicleId + '`' + (vehicle?.make ? (' ' + vehicle.make + ' ' + vehicle.model) : '');
+			vehicleInfo = ['`' + vehicleId + '`', vehicle && describeVehicle(vehicle)].filter(Boolean).join(' ');
 		}
 		return '<t:' + (arrival.estimated_arrival_unix || arrival.scheduled_arrival_unix) + ':R> ' + arrival.line_id + ' ' + arrival.headsign + ' ' + (arrival.stop_sequence === 1 ? '**(PARTIDA)**' : '') + '\n-# **Veículo:** ' + vehicleInfo;
 	}).join('\n');

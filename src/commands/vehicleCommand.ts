@@ -4,7 +4,7 @@ import { normalizeVehicleId } from '../utils/ids';
 import { getHeadsign } from '../utils/patterns';
 import render from '../utils/render';
 import { stops } from '../utils/stops';
-import { getVehicles } from '../utils/vehicles';
+import { describeVehicle, getVehicles } from '../utils/vehicles';
 
 const data = new SlashCommandBuilder()
 	.setName('veiculo')
@@ -41,7 +41,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			new ContainerBuilder()
 				.setAccentColor(0xffdd00)
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent('### ' + vehicleInfo.id + (vehicleInfo.make ? (' - ' + vehicleInfo.make + ' ' + vehicleInfo.model) : '')),
+					new TextDisplayBuilder().setContent('### ' + [vehicleInfo.id, describeVehicle(vehicleInfo)].filter(Boolean).join(' - ')),
 				)
 				.addSeparatorComponents(
 					new SeparatorBuilder({ divider: true, spacing: SeparatorSpacingSize.Small }),
@@ -74,7 +74,7 @@ const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => 
 	const vehicles = await getVehicles();
 	const focusedValue = interaction.options.getFocused();
 	const filtered = vehicles.filter(v => normalizeVehicleId(v.id).toLowerCase().startsWith(focusedValue.toLowerCase()) || v.license_plate?.toLowerCase().startsWith(focusedValue.toLowerCase()) || v.make?.toLowerCase().startsWith(focusedValue.toLowerCase()) || v.model?.toLowerCase().startsWith(focusedValue.toLowerCase()));
-	await interaction.respond(filtered.slice(0, 25).map(v => ({ name: v.id + ' | ' + v.license_plate + (v.make ? (' - ' + v.make + ' ' + v.model) : ''), value: v.id })));
+	await interaction.respond(filtered.slice(0, 25).map(v => ({ name: [[v.id, v.license_plate].filter(Boolean).join(' | '), describeVehicle(v)].filter(Boolean).join(' - '), value: v.id })));
 };
 
 export default {

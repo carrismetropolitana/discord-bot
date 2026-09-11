@@ -39,6 +39,12 @@ function toUnixSeconds(timestamp: number): number {
 	return timestamp > 1e11 ? Math.floor(timestamp / 1000) : timestamp;
 }
 
+// make, model and license_plate are null fleet-wide on the current API, so every
+// label built from them has to drop the missing parts rather than print "null".
+export function describeVehicle(vehicle: Pick<Vehicle, 'make' | 'model'>): string {
+	return [vehicle.make, vehicle.model].filter(Boolean).join(' ');
+}
+
 async function fetchVehicles(): Promise<Vehicle[]> {
 	const vehicles: Vehicle[] = await (await fetch('https://api.carrismetropolitana.pt/v2/vehicles')).json();
 	return vehicles.map(vehicle => ({ ...vehicle, timestamp: toUnixSeconds(vehicle.timestamp) }));
