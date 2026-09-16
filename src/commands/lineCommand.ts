@@ -3,7 +3,7 @@ import { AutocompleteInteraction, ButtonStyle, type CacheType, ChatInputCommandI
 import { stripOperatorPrefix } from '../utils/ids';
 import { lines } from '../utils/lines';
 import { getHeadsign } from '../utils/patterns';
-import { getVehicles } from '../utils/vehicles';
+import { getVehicleName, getVehicles } from '../utils/vehicles';
 
 const data = new SlashCommandBuilder()
 	.setName('linha')
@@ -32,7 +32,10 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let vehiclesContent = '*Não há veículos a efetuar este serviço*';
 		const vehiclesFiltered = vehiclesInfo.filter(vec => stripOperatorPrefix(vec.pattern_id) === stripOperatorPrefix(pattern.id));
 		if (vehiclesFiltered.length > 0) {
-			vehiclesContent = vehiclesFiltered.map(vec => '`' + vec.id + '` | ' + vec.make + ' ' + vec.model).join('\n');
+			vehiclesContent = vehiclesFiltered.map((vec) => {
+				const name = getVehicleName(vec);
+				return '`' + vec.id + '`' + (name ? ' | ' + name : '');
+			}).join('\n');
 		}
 		departureSections.push(
 			new SectionBuilder()

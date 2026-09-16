@@ -4,7 +4,7 @@ import { normalizeVehicleId } from '../utils/ids';
 import { getHeadsign } from '../utils/patterns';
 import render from '../utils/render';
 import { stops } from '../utils/stops';
-import { getVehicles } from '../utils/vehicles';
+import { getVehicleName, getVehicles } from '../utils/vehicles';
 
 const data = new SlashCommandBuilder()
 	.setName('veiculo')
@@ -18,7 +18,7 @@ const data = new SlashCommandBuilder()
 	)
 	.setContexts(InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel);
 
-function getStop(id: string) {
+function getStop(id: null | string) {
 	const stopInfo = stops.find(a => a.id === id);
 	if (!stopInfo) return ':x:';
 	return stopInfo.long_name + ' | `#' + id + '`';
@@ -32,6 +32,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	if (!vehicleInfo.timestamp) return interaction.reply({ content: ':x: Este veículo não apresenta quaisquer dados de viagem. Se achas que isto é um erro, por favor abre um issue [aqui](<https://github.com/carrismetropolitana/discord-bot/issues>).', flags: [MessageFlags.Ephemeral] });
 	interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 	vehicleInfo.state = 'normal';
+	const vehicleName = getVehicleName(vehicleInfo);
 	const now = Date.now();
 	if (now > (vehicleInfo.timestamp + 300) * 1000) vehicleInfo.state = 'delay';
 	if (now > (vehicleInfo.timestamp + 3600) * 1000) vehicleInfo.state = 'error';
@@ -41,7 +42,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			new ContainerBuilder()
 				.setAccentColor(0xffdd00)
 				.addTextDisplayComponents(
-					new TextDisplayBuilder().setContent('### ' + vehicleInfo.id + (vehicleInfo.make ? (' - ' + vehicleInfo.make + ' ' + vehicleInfo.model) : '')),
+					new TextDisplayBuilder().setContent('### ' + vehicleInfo.id + (vehicleName ? ' - ' + vehicleName : '')),
 				)
 				.addSeparatorComponents(
 					new SeparatorBuilder({ divider: true, spacing: SeparatorSpacingSize.Small }),
@@ -74,7 +75,10 @@ const autocomplete = async (interaction: AutocompleteInteraction<CacheType>) => 
 	const vehicles = await getVehicles();
 	const focusedValue = interaction.options.getFocused();
 	const filtered = vehicles.filter(v => normalizeVehicleId(v.id).toLowerCase().startsWith(focusedValue.toLowerCase()) || v.license_plate?.toLowerCase().startsWith(focusedValue.toLowerCase()) || v.make?.toLowerCase().startsWith(focusedValue.toLowerCase()) || v.model?.toLowerCase().startsWith(focusedValue.toLowerCase()));
-	await interaction.respond(filtered.slice(0, 25).map(v => ({ name: v.id + ' | ' + v.license_plate + (v.make ? (' - ' + v.make + ' ' + v.model) : ''), value: v.id })));
+	await interaction.respond(filtered.slice(0, 25).map((v) => {
+		const details = [v.license_plate, getVehicleName(v)].filter(Boolean).join(' - ');
+		return { name: v.id + (details ? ' | ' + details : ''), value: v.id };
+	}));
 };
 
 export default {
