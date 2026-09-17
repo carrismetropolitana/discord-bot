@@ -1,21 +1,16 @@
-export interface Line {
-	color: string
-	facilities: []
-	id: string
-	locality_ids: (null | string)[]
-	long_name: string
-	municipality_ids: string[]
-	pattern_ids: string[]
-	region_ids: string[]
-	route_ids: string[]
-	short_name: string
-	stop_ids: []
-	text_color: string
-	tts_name: string
-};
+import { z } from 'zod';
 
-async function getLines(): Promise<Line[]> {
-	return (await fetch('https://api.carrismetropolitana.pt/v2/lines')).json();
-}
+import { fetchJson } from './api';
 
-export const lines = await getLines();
+const lineSchema = z.object({
+	id: z.string().min(1),
+	long_name: z.string().min(1),
+	pattern_ids: z.array(z.string()),
+	short_name: z.string().min(1),
+});
+
+const linesSchema = z.array(lineSchema);
+
+export type Line = z.infer<typeof lineSchema>;
+
+export const lines = await fetchJson('https://api.carrismetropolitana.pt/v2/lines', linesSchema);

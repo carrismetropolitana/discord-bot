@@ -19,7 +19,7 @@ const data = new SlashCommandBuilder()
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const stop = interaction.options.getString('stop');
 	const stopInfo = stops.find(s => s.id === stop);
-	if (!stopInfo) return ({ content: ':x: Paragem desconhecida: `' + stop + '`.', flags: [MessageFlags.Ephemeral] });
+	if (!stopInfo) return interaction.reply({ content: ':x: Paragem desconhecida: `' + stop + '`.', flags: [MessageFlags.Ephemeral] });
 	const image = await render.renderStopMap(stopInfo.lat, stopInfo.lon);
 	interaction.reply({
 		components: [

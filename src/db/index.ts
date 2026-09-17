@@ -5,10 +5,23 @@ const db = new Database('db.sqlite', { create: true });
 db.exec('CREATE TABLE IF NOT EXISTS guilds (guild_id TEXT PRIMARY KEY, channel_id TEXT, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
 
 // Make table for already sent out alerts
-db.exec('CREATE TABLE IF NOT EXISTS alerts (alert_id TEXT PRIMARY KEY, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
+db.exec('CREATE TABLE IF NOT EXISTS alerts (alert_id TEXT PRIMARY KEY NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
+
+const alertIdColumn = db.query<{ is_not_null: number }, []>('SELECT "notnull" AS is_not_null FROM pragma_table_info(\'alerts\') WHERE name = \'alert_id\'').get();
+if (!alertIdColumn?.is_not_null) {
+	const migrateAlerts = db.transaction(() => {
+		db.exec('DROP TABLE IF EXISTS alerts_with_valid_ids');
+		db.exec('CREATE TABLE alerts_with_valid_ids (alert_id TEXT PRIMARY KEY NOT NULL, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
+		db.exec('INSERT OR IGNORE INTO alerts_with_valid_ids (alert_id, updated_at) SELECT alert_id, updated_at FROM alerts WHERE alert_id IS NOT NULL AND length(alert_id) > 0');
+		db.exec('DROP TABLE alerts');
+		db.exec('ALTER TABLE alerts_with_valid_ids RENAME TO alerts');
+	});
+	migrateAlerts();
+}
 
 // Make table for favorite alerts to hold user_id, guild_id, alert_id
 db.exec('CREATE TABLE IF NOT EXISTS favorites (user_id TEXT, guild_id TEXT, line_id TEXT, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (user_id, guild_id, line_id))');
+db.exec('CREATE TABLE IF NOT EXISTS migrations (migration_id TEXT PRIMARY KEY NOT NULL, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
 // Add indexes for faster lookups
 db.exec('CREATE INDEX IF NOT EXISTS line_id_index ON favorites (line_id)');
 
@@ -40,7 +53,32 @@ export function getChannelsAndGuilds() {
 }
 
 export function addSentAlert(alertId: string) {
+	if (!alertId) {
+		throw new Error('Cannot persist an alert without a valid ID');
+	}
+
 	db.query('INSERT INTO alerts (alert_id, updated_at) VALUES (?, CURRENT_TIMESTAMP) ON CONFLICT(alert_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP').run(alertId);
+}
+
+export function baselineV2Alerts(alertIds: string[]) {
+	const baseline = db.transaction(() => {
+		const migrationId = 'baseline-v2-alert-ids';
+		const alreadyApplied = db.query<{ migration_id: string }, [string]>('SELECT migration_id FROM migrations WHERE migration_id = ?').get(migrationId);
+		if (alreadyApplied) return false;
+
+		const insertAlert = db.query('INSERT OR IGNORE INTO alerts (alert_id, updated_at) VALUES (?, CURRENT_TIMESTAMP)');
+		for (const alertId of alertIds) {
+			if (!alertId) {
+				throw new Error('Cannot baseline an alert without a valid ID');
+			}
+			insertAlert.run(alertId);
+		}
+
+		db.query('INSERT INTO migrations (migration_id, applied_at) VALUES (?, CURRENT_TIMESTAMP)').run(migrationId);
+		return true;
+	});
+
+	return baseline();
 }
 
 export function getSentAlerts() {
